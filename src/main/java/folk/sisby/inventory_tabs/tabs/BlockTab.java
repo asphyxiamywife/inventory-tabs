@@ -1,7 +1,9 @@
 package folk.sisby.inventory_tabs.tabs;
 
 import folk.sisby.inventory_tabs.InventoryTabs;
+import folk.sisby.inventory_tabs.TabManager;
 import folk.sisby.inventory_tabs.util.BlockUtil;
+import folk.sisby.inventory_tabs.util.PlayerUtil;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
@@ -16,11 +18,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 
@@ -56,7 +59,15 @@ public class BlockTab implements Tab {
     @Override
     public void open(LocalPlayer player, ClientLevel world, AbstractContainerMenu handler, MultiPlayerGameMode interactionManager) {
         if (InventoryTabs.CONFIG.rotatePlayer) player.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(pos));
-        interactionManager.useItemOn(player, InteractionHand.MAIN_HAND, new BlockHitResult(pos.getCenter(), Direction.EAST, pos, false));
+        BlockHitResult hitResult = PlayerUtil.raycast(player, pos);
+        if (hitResult.getType() == HitResult.Type.MISS || !hitResult.getBlockPos().equals(pos)) {
+            TabManager.cancelPendingTabOpen();
+            return;
+        }
+        InteractionResult result = interactionManager.useItemOn(player, InteractionHand.MAIN_HAND, hitResult);
+        if (!result.consumesAction()) {
+            TabManager.cancelPendingTabOpen();
+        }
     }
 
     @Override

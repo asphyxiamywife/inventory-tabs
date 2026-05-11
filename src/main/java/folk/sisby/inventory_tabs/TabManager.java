@@ -52,6 +52,7 @@ public class TabManager {
     public static final int TAB_HEIGHT = 21; // Without Inset
     public static final int BUTTON_WIDTH = 10;
     public static final int BUTTON_HEIGHT = 18;
+    public static final int PENDING_TAB_TIMEOUT = 5;
 
     public static final Map<Identifier, BiFunction<AbstractContainerScreen<?>, List<Tab>, Tab>> tabGuessers = new HashMap<>();
 
@@ -62,6 +63,7 @@ public class TabManager {
     public static Tab currentTab;
     public static List<WidgetPosition> tabPositions = new ArrayList<>();
     public static int holdTabCooldown = 0;
+    public static int pendingTabTicks = 0;
     public static boolean enabled = true;
     public static Map<BlockPos, RaycastCache> blockRaycastCache = new HashMap<>();
 
@@ -81,6 +83,7 @@ public class TabManager {
             currentTab = nextTab;
             setCurrentPage(tabPositions.isEmpty() ? 0 : tabs.indexOf(nextTab) / tabPositions.size());
             nextTab = null;
+            pendingTabTicks = 0;
         }
     }
 
@@ -90,10 +93,14 @@ public class TabManager {
             currentTab = null;
         }
         nextTab = null;
+        pendingTabTicks = 0;
         currentPage = 0;
     }
 
     public static void tick(ClientLevel world) {
+        if (nextTab != null && pendingTabTicks > 0 && --pendingTabTicks <= 0) {
+            cancelPendingTabOpen();
+        }
         blockRaycastCache.values().removeIf(timer -> !timer.validThisTick && timer.ticksInvalid >= InventoryTabs.CONFIG.blockRaycastTimeout);
         blockRaycastCache.values().forEach(RaycastCache::tick);
         if (holdTabCooldown > 0) {
@@ -112,12 +119,21 @@ public class TabManager {
 
     public static void openTabImmediate(Tab tab, LocalPlayer player, MultiPlayerGameMode interactionManager, ClientLevel world) {
         nextTab = tab;
+        pendingTabTicks = tab.isInstant() ? 0 : PENDING_TAB_TIMEOUT;
         HandlerSlotUtil.push(player, Minecraft.getInstance().gameMode, currentScreen.getMenu(), tab.isInstant());
         player.connection.send(new ServerboundContainerClosePacket(currentScreen.getMenu().containerId));
         tab.open(player, world, currentScreen.getMenu(), interactionManager);
         if (tab.isInstant()) { // Instant screens don't have slot updates to wait for, so finish now.
             finishOpeningScreen(currentScreen.getMenu());
         }
+    }
+
+    public static void cancelPendingTabOpen() {
+        if (Minecraft.getInstance().player != null && Minecraft.getInstance().gameMode != null && currentScreen != null) {
+            HandlerSlotUtil.tryPop(Minecraft.getInstance().player, Minecraft.getInstance().gameMode, currentScreen.getMenu());
+        }
+        nextTab = null;
+        pendingTabTicks = 0;
     }
 
 
@@ -324,5 +340,3 @@ public class TabManager {
         return nextTab != null;
     }
 }
-
-
