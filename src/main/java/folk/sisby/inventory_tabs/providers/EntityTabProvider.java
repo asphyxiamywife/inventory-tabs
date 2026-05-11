@@ -5,13 +5,13 @@ import folk.sisby.inventory_tabs.TabProviders;
 import folk.sisby.inventory_tabs.tabs.EntityTab;
 import folk.sisby.inventory_tabs.tabs.Tab;
 import folk.sisby.inventory_tabs.util.PlayerUtil;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,14 +27,14 @@ public abstract class EntityTabProvider extends RegistryTabProvider<EntityType<?
 
     public EntityTabProvider() {
         preclusions.put(InventoryTabs.id("removed"), Entity::isRemoved);
-        preclusions.put(InventoryTabs.id("player_in_range"), (e) -> MinecraftClient.getInstance().player != null && !PlayerUtil.inRange(MinecraftClient.getInstance().player, e));
-        preclusions.put(InventoryTabs.id("vehicle"), e -> MinecraftClient.getInstance().player != null && e == MinecraftClient.getInstance().player.getVehicle());
+        preclusions.put(InventoryTabs.id("player_in_range"), (e) -> Minecraft.getInstance().player != null && !PlayerUtil.inRange(Minecraft.getInstance().player, e));
+        preclusions.put(InventoryTabs.id("vehicle"), e -> Minecraft.getInstance().player != null && e == Minecraft.getInstance().player.getVehicle());
     }
 
     @Override
-    public void addAvailableTabs(ClientPlayerEntity player, Consumer<Tab> addTab) {
-        World world = player.getEntityWorld();
-        for (Entity entity : world.getNonSpectatingEntities(Entity.class, Box.of(player.getSyncedPos(), PlayerUtil.REACH * 2, PlayerUtil.REACH * 2, PlayerUtil.REACH * 2))) {
+    public void addAvailableTabs(LocalPlayer player, Consumer<Tab> addTab) {
+        Level world = player.level();
+        for (Entity entity : world.getEntities((Entity) null, AABB.ofSize(player.position(), PlayerUtil.REACH * 2, PlayerUtil.REACH * 2, PlayerUtil.REACH * 2), e -> true)) {
             EntityType<?> type = entity.getType();
             if (!values.contains(type) && !failedMatches.contains(type)) {
                 if (TabProviders.warmEntities.contains(type) && warmMatches.values().stream().anyMatch(t -> t.test(entity))) {

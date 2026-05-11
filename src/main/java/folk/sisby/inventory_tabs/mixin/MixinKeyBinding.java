@@ -13,46 +13,45 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.KeyMapping;
+import com.mojang.blaze3d.platform.InputConstants;
 
-@Mixin(KeyBinding.class)
+@Mixin(KeyMapping.class)
 public class MixinKeyBinding {
-	@Shadow private int timesPressed;
-	@Shadow private InputUtil.Key boundKey;
+	@Shadow private int clickCount;
+	@Shadow protected InputConstants.Key key;
 
-	@Shadow @Final private static Map<String, KeyBinding> KEYS_BY_ID;
-	@Unique private static final Multimap<InputUtil.Key, KeyBinding> KEYS_TO_BINDINGS = ArrayListMultimap.create();
+	@Shadow @Final private static Map<String, KeyMapping> ALL;
+	@Unique private static final Multimap<InputConstants.Key, KeyMapping> KEYS_TO_BINDINGS = ArrayListMultimap.create();
 
-	//Removed descriptor
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void saveConflictedBinds(CallbackInfo ci) {
-		KEYS_TO_BINDINGS.put(boundKey, (KeyBinding) (Object) this);
+		KEYS_TO_BINDINGS.put(key, (KeyMapping) (Object) this);
 	}
 
-	@Inject(method = "onKeyPressed", at = @At("HEAD"), cancellable = true)
-	private static void allowTabConflictedOnKeyPressed(InputUtil.Key key, CallbackInfo ci) {
-		if (!key.equals(((MixinKeyBinding) (Object) InventoryTabs.NEXT_TAB).boundKey)) return;
-		for (KeyBinding bind : KEYS_TO_BINDINGS.get(key)) {
-			((MixinKeyBinding) (Object) bind).timesPressed++;
+	@Inject(method = "click", at = @At("HEAD"), cancellable = true)
+	private static void allowTabConflictedOnKeyPressed(InputConstants.Key pressedKey, CallbackInfo ci) {
+		if (InventoryTabs.NEXT_TAB == null || !pressedKey.equals(((MixinKeyBinding) (Object) InventoryTabs.NEXT_TAB).key)) return;
+		for (KeyMapping bind : KEYS_TO_BINDINGS.get(pressedKey)) {
+			((MixinKeyBinding) (Object) bind).clickCount++;
 		}
 		ci.cancel();
 	}
 
-	@Inject(method = "setKeyPressed", at = @At("HEAD"), cancellable = true)
-	private static void allowTabConflictedSetKeyPressed(InputUtil.Key key, boolean pressed$, CallbackInfo ci) {
-		if (!key.equals(((MixinKeyBinding) (Object) InventoryTabs.NEXT_TAB).boundKey)) return;
-		for (KeyBinding bind : KEYS_TO_BINDINGS.get(key)) {
-			bind.setPressed(pressed$);
+	@Inject(method = "set", at = @At("HEAD"), cancellable = true)
+	private static void allowTabConflictedSetKeyPressed(InputConstants.Key pressedKey, boolean pressed$, CallbackInfo ci) {
+		if (InventoryTabs.NEXT_TAB == null || !pressedKey.equals(((MixinKeyBinding) (Object) InventoryTabs.NEXT_TAB).key)) return;
+		for (KeyMapping bind : KEYS_TO_BINDINGS.get(pressedKey)) {
+			bind.setDown(pressed$);
 		}
 		ci.cancel();
 	}
 
-	@Inject(method = "updateKeysByCode", at = @At("HEAD"))
+	@Inject(method = "resetMapping", at = @At("HEAD"))
 	private static void updateConflictedBinds(CallbackInfo ci) {
 		KEYS_TO_BINDINGS.clear();
-		for (KeyBinding bind : KEYS_BY_ID.values()) {
-			KEYS_TO_BINDINGS.put(((MixinKeyBinding) (Object) bind).boundKey, bind);
+		for (KeyMapping bind : ALL.values()) {
+			KEYS_TO_BINDINGS.put(((MixinKeyBinding) (Object) bind).key, bind);
 		}
 	}
 }

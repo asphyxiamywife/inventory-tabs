@@ -2,10 +2,10 @@ package folk.sisby.inventory_tabs.providers;
 
 import folk.sisby.inventory_tabs.tabs.ItemTab;
 import folk.sisby.inventory_tabs.tabs.Tab;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,10 +18,10 @@ public abstract class ItemTabProvider extends RegistryTabProvider<Item> {
     public final Map<Identifier, Predicate<ItemStack>> preclusions = new HashMap<>();
 
     @Override
-    public void addAvailableTabs(ClientPlayerEntity player, Consumer<Tab> addTab) {
+    public void addAvailableTabs(LocalPlayer player, Consumer<Tab> addTab) {
         Set<Item> itemsAdded = new HashSet<>();
-        for (int i = 0; i < player.getInventory().size(); i++) {
-            ItemStack stack = player.getInventory().getStack(i);
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
             if (values.contains(stack.getItem()) && preclusions.values().stream().noneMatch(p -> p.test(stack))) {
                 if (isUnique() && !itemsAdded.add(stack.getItem())) continue;
                 addTab.accept(createTab(stack, i));

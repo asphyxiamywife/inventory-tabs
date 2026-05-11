@@ -1,6 +1,6 @@
 package folk.sisby.inventory_tabs.providers;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.HashSet;

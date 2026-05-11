@@ -5,12 +5,12 @@ import folk.sisby.inventory_tabs.tabs.BlockTab;
 import folk.sisby.inventory_tabs.tabs.Tab;
 import folk.sisby.inventory_tabs.util.BlockUtil;
 import folk.sisby.inventory_tabs.util.PlayerUtil;
-import net.minecraft.block.Block;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,17 +20,17 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
 public abstract class BlockTabProvider extends RegistryTabProvider<Block> {
-    public final Map<Identifier, BiPredicate<World, BlockPos>> preclusions = new HashMap<>();
+    public final Map<Identifier, BiPredicate<Level, BlockPos>> preclusions = new HashMap<>();
 
     public BlockTabProvider() {
-        preclusions.put(InventoryTabs.id("player_in_range"), (w, p) -> MinecraftClient.getInstance().player != null && !PlayerUtil.inRange(MinecraftClient.getInstance().player, p));
+        preclusions.put(InventoryTabs.id("player_in_range"), (w, p) -> Minecraft.getInstance().player != null && !PlayerUtil.inRange(Minecraft.getInstance().player, p));
     }
 
     @Override
-    public void addAvailableTabs(ClientPlayerEntity player, Consumer<Tab> addTab) {
-        World world = player.getEntityWorld();
+    public void addAvailableTabs(LocalPlayer player, Consumer<Tab> addTab) {
+        Level world = player.level();
         Set<Block> blocksAdded = new HashSet<>();
-        for (BlockPos pos : BlockUtil.getBlocksInRadius(player.getBlockPos(), PlayerUtil.REACH)) {
+        for (BlockPos pos : BlockUtil.getBlocksInRadius(player.blockPosition(), PlayerUtil.REACH)) {
             Block block = world.getBlockState(pos).getBlock();
             if (values.contains(block) && preclusions.values().stream().noneMatch(p -> p.test(world, pos))) {
                 if (isUnique() && !blocksAdded.add(block)) continue;
@@ -39,9 +39,9 @@ public abstract class BlockTabProvider extends RegistryTabProvider<Block> {
         }
     }
 
-    public Tab createTab(World world, BlockPos pos) {
+    public Tab createTab(Level world, BlockPos pos) {
         return new BlockTab(world, pos, preclusions, getTabOrderPriority(world, pos), isUnique());
     }
 
-    public abstract int getTabOrderPriority(World world, BlockPos pos);
+    public abstract int getTabOrderPriority(Level world, BlockPos pos);
 }

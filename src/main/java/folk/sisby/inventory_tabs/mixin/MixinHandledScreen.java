@@ -5,51 +5,52 @@ import folk.sisby.inventory_tabs.InventoryTabs;
 import folk.sisby.inventory_tabs.ScreenSupport;
 import folk.sisby.inventory_tabs.TabManager;
 import folk.sisby.inventory_tabs.duck.InventoryTabsScreen;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.input.KeyInput;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.KeyEvent;
 import com.mojang.blaze3d.systems.RenderSystem;
 
-@Mixin(HandledScreen.class)
+@Mixin(AbstractContainerScreen.class)
 public abstract class MixinHandledScreen extends Screen implements InventoryTabsScreen {
     @Unique Boolean inventoryTabs$allowTabs = false;
 
-    protected MixinHandledScreen(Text title) {
+    protected MixinHandledScreen(Component title) {
         super(title);
     }
 
-    @Inject(method = "<init>", at = @At("TAIL"))
-    private void checkSupported(ScreenHandler handler, PlayerInventory inventory, Text title, CallbackInfo ci) {
+    @Inject(method = "<init>(Lnet/minecraft/world/inventory/AbstractContainerMenu;Lnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/network/chat/Component;II)V", at = @At("TAIL"))
+    private void checkSupported(AbstractContainerMenu handler, Inventory inventory, Component title, int imageWidth, int imageHeight, CallbackInfo ci) {
         inventoryTabs$allowTabs = ScreenSupport.allowTabs(this);
     }
     
     @Inject(method = "init", at = @At("RETURN"))
     private void init(CallbackInfo callbackInfo) {
         if (!inventoryTabs$allowTabs) return;
-        HandledScreen<?> self = (HandledScreen<?>) (Object) this;
-        TabManager.initScreen(client, self);
+        AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
+        TabManager.initScreen(Minecraft.getInstance(), self);
     }
 
-    @Inject(method = "render", at = @At("TAIL"))
-    protected void render(DrawContext drawContext, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    @Inject(method = "extractRenderState", at = @At("TAIL"))
+    protected void render(GuiGraphicsExtractor drawContext, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (!inventoryTabs$allowTabs) return;
         TabManager.render(drawContext, mouseX, mouseY);
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    public void mouseClicked(Click click, boolean doubled, CallbackInfoReturnable<Boolean> callbackInfo) {
+    public void mouseClicked(MouseButtonEvent click, boolean doubled, CallbackInfoReturnable<Boolean> callbackInfo) {
         if (!inventoryTabs$allowTabs) return;
         if (TabManager.mouseClicked(click.x(), click.y(), click.button())) {
             callbackInfo.setReturnValue(true);
@@ -58,7 +59,7 @@ public abstract class MixinHandledScreen extends Screen implements InventoryTabs
     }
 
     @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)
-    public void mouseReleased(Click click, CallbackInfoReturnable<Boolean> callbackInfo) {
+    public void mouseReleased(MouseButtonEvent click, CallbackInfoReturnable<Boolean> callbackInfo) {
         if (!inventoryTabs$allowTabs) return;
         if (TabManager.mouseReleased(click.x(), click.y(), click.button())) {
             callbackInfo.setReturnValue(true);
@@ -67,7 +68,7 @@ public abstract class MixinHandledScreen extends Screen implements InventoryTabs
     }
 
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
-    public void keyPressed(KeyInput input, CallbackInfoReturnable<Boolean> callbackInfo) {
+    public void keyPressed(KeyEvent input, CallbackInfoReturnable<Boolean> callbackInfo) {
         if (!inventoryTabs$allowTabs) return;
         if (TabManager.keyPressed(input.key(), input.scancode(), input.modifiers())) {
             callbackInfo.setReturnValue(true);
@@ -75,18 +76,18 @@ public abstract class MixinHandledScreen extends Screen implements InventoryTabs
         }
     }
 
-    @Inject(method = "isClickOutsideBounds", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "hasClickedOutside", at = @At("RETURN"), cancellable = true)
     protected void isClickOutsideBounds(double mouseX, double mouseY, int left, int top, CallbackInfoReturnable<Boolean> cir) {
         if (inventoryTabs$allowTabs && cir.getReturnValue()) {
             cir.setReturnValue(TabManager.isClickOutsideBounds(mouseX, mouseY));
         }
     }
 
-	@ModifyExpressionValue(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;getDisplayName()Lnet/minecraft/text/Text;"))
-	private Text removeCompactPlayerInventoryTitle(Text original) {
-		HandledScreen<?> self = (HandledScreen<?>) (Object) this;
-		if (InventoryTabs.CONFIG.compactLargeContainers && self.getScreenHandler() instanceof GenericContainerScreenHandler gcsh && gcsh.getRows() == 6) {
-			return Text.empty();
+	@ModifyExpressionValue(method = "<init>(Lnet/minecraft/world/inventory/AbstractContainerMenu;Lnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/network/chat/Component;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;getDisplayName()Lnet/minecraft/network/chat/Component;"))
+	private Component removeCompactPlayerInventoryTitle(Component original) {
+		AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
+		if (InventoryTabs.CONFIG.compactLargeContainers && self.getMenu() instanceof ChestMenu gcsh && gcsh.getRowCount() == 6) {
+			return Component.empty();
 		}
 		return original;
 	}

@@ -1,14 +1,14 @@
 package folk.sisby.inventory_tabs.mixin;
 
 import folk.sisby.inventory_tabs.InventoryTabs;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.ContainerScreen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,69 +19,62 @@ import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-@Mixin(GenericContainerScreen.class)
-public abstract class MixinGenericContainerScreen extends HandledScreen<GenericContainerScreenHandler> {
-    @Shadow @Final private int rows;
-    @Shadow @Final private static Identifier TEXTURE;
+@Mixin(ContainerScreen.class)
+public abstract class MixinGenericContainerScreen extends AbstractContainerScreen<ChestMenu> {
+    @Shadow @Final private int containerRows;
+    @Shadow @Final private static Identifier CONTAINER_BACKGROUND;
 
-    public MixinGenericContainerScreen(GenericContainerScreenHandler handler, PlayerInventory inventory, Text title) {
+    public MixinGenericContainerScreen(ChestMenu handler, Inventory inventory, Component title) {
         super(handler, inventory, title);
     }
 
-	@ModifyArgs(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;<init>(Lnet/minecraft/screen/ScreenHandler;Lnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/text/Text;)V"))
+	@ModifyArgs(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;<init>(Lnet/minecraft/world/inventory/AbstractContainerMenu;Lnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/network/chat/Component;II)V"))
 	private static void containerHideTitle(Args args) {
-		if (((GenericContainerScreenHandler) args.get(0)).getRows() == 6 && InventoryTabs.CONFIG.compactLargeContainers) {
-			args.set(2, Text.empty());
+		if (((ChestMenu) args.get(0)).getRowCount() == 6 && InventoryTabs.CONFIG.compactLargeContainers) {
+			args.set(2, Component.empty());
+			args.set(4, (Integer) args.get(4) - 30);
+		} else {
+			args.set(4, (Integer) args.get(4) - 2);
 		}
 	}
 
-    @Inject(method = "<init>", at = @At("TAIL"))
-    public void containerTextHeight(GenericContainerScreenHandler handler, PlayerInventory inventory, Text title, CallbackInfo ci) {
-        if (rows == 6 && InventoryTabs.CONFIG.compactLargeContainers) {
-            this.backgroundHeight -= 30;
-        } else {
-            this.backgroundHeight -= 2;
-            this.playerInventoryTitleY = this.backgroundHeight - 94;
-        }
+    @Inject(method = "extractBackground", at = @At("TAIL"))
+    public void containerHeader(GuiGraphicsExtractor drawContext, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        drawContext.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_BACKGROUND, (this.width - this.imageWidth) / 2, (this.height - this.imageHeight) / 2, 0, 0, this.imageWidth, 7, 256, 256);
     }
 
-    @Inject(method = "drawBackground", at = @At("TAIL"))
-    public void containerHeader(DrawContext drawContext, float delta, int mouseX, int mouseY, CallbackInfo ci) {
-        drawContext.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, (this.width - this.backgroundWidth) / 2, (this.height - this.backgroundHeight) / 2, 0, 0, this.backgroundWidth, 7, 256, 256);
-    }
-
-    @ModifyArg(method = "drawBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTexture(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/util/Identifier;IIFFIIII)V", ordinal = 0), index = 3)
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 0), index = 3)
     public int containerY(int original) {
         return original + 7;
     }
 
-    @ModifyArg(method = "drawBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTexture(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/util/Identifier;IIFFIIII)V", ordinal = 0), index = 5)
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 0), index = 5)
     public float containerV(float original) {
-        if (rows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original + 17;
+        if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original + 17;
         return original + 8;
     }
 
-    @ModifyArg(method = "drawBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTexture(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/util/Identifier;IIFFIIII)V", ordinal = 0), index = 7)
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 0), index = 7)
     public int containerHeight(int original) {
-        if (rows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original - 17;
+        if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original - 17;
         return original - 8;
     }
 
-    @ModifyArg(method = "drawBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTexture(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/util/Identifier;IIFFIIII)V", ordinal = 1), index = 3)
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 1), index = 3)
     public int inventoryY(int original) {
-        if (rows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original - 10;
+        if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original - 10;
         return original - 1;
     }
 
-    @ModifyArg(method = "drawBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTexture(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/util/Identifier;IIFFIIII)V", ordinal = 1), index = 5)
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 1), index = 5)
     public float inventoryV(float original) {
-        if (rows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original + 9;
+        if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original + 9;
         return original;
     }
 
-    @ModifyArg(method = "drawBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTexture(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/util/Identifier;IIFFIIII)V", ordinal = 1), index = 7)
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 1), index = 7)
     public int inventoryHeight(int original) {
-        if (rows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original - 9;
+        if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original - 9;
         return original;
     }
 }

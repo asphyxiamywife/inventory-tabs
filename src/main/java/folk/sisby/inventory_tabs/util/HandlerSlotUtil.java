@@ -1,9 +1,9 @@
 package folk.sisby.inventory_tabs.util;
 
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerInput;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 public class HandlerSlotUtil {
@@ -12,20 +12,20 @@ public class HandlerSlotUtil {
 
     //Rewrote Item Mover
     public static void push(
-            ClientPlayerEntity player,
-            ClientPlayerInteractionManager manager,
-            ScreenHandler handler,
+            LocalPlayer player,
+            MultiPlayerGameMode manager,
+            AbstractContainerMenu handler,
             boolean doClient
     ) {
-        if (!handler.getCursorStack().isEmpty()) {
-            stashSlot = player.getInventory().getEmptySlot();
+        if (!handler.getCarried().isEmpty()) {
+            stashSlot = player.getInventory().getFreeSlot();
             if (stashSlot != -1) {
-                handler.getSlotIndex(player.getInventory(), stashSlot).ifPresent((screenSlot) -> {
-                    manager.clickSlot(
-                            handler.syncId,
+                handler.findSlot(player.getInventory(), stashSlot).ifPresent((screenSlot) -> {
+                    manager.handleContainerInput(
+                            handler.containerId,
                             screenSlot,
                             0,
-                            SlotActionType.PICKUP,
+                            ContainerInput.PICKUP,
                             player
                     );
                 });
@@ -34,23 +34,23 @@ public class HandlerSlotUtil {
     }
 
 
-    public static void tryPop(ClientPlayerEntity player, ClientPlayerInteractionManager manager, ScreenHandler handler) {
+    public static void tryPop(LocalPlayer player, MultiPlayerGameMode manager, AbstractContainerMenu handler) {
         if (stashSlot != -1) {
-            handler.getSlotIndex(player.getInventory(), stashSlot).ifPresent((screenSlot) -> manager.clickSlot(
-                    handler.syncId,
+            handler.findSlot(player.getInventory(), stashSlot).ifPresent((screenSlot) -> manager.handleContainerInput(
+                    handler.containerId,
                     screenSlot,
-                    0, // Mouse Left Click
-                    SlotActionType.PICKUP,
+                    0, // MouseHandler Left MouseButtonEvent
+                    ContainerInput.PICKUP,
                     player
             ));
             stashSlot = -1;
         }
         if (mainHandSwapSlot != -1) {
-            handler.getSlotIndex(player.getInventory(), mainHandSwapSlot).ifPresent((screenSlot) -> manager.clickSlot(
-                    handler.syncId,
+            handler.findSlot(player.getInventory(), mainHandSwapSlot).ifPresent((screenSlot) -> manager.handleContainerInput(
+                    handler.containerId,
                     screenSlot,
                     player.getInventory().getSelectedSlot(),
-                    SlotActionType.SWAP,
+                    ContainerInput.SWAP,
                     player
             ));
             mainHandSwapSlot = -1;
