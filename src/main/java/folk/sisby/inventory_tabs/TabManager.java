@@ -263,7 +263,7 @@ public class TabManager {
     public static boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (InventoryTabs.TOGGLE_TABS.matches(new KeyEvent(keyCode, scanCode, 1))) {
             enabled = !enabled;
-            if (!enabled) Minecraft.getInstance().getToastManager().addToast(new ControlHintToast(Component.translatable("toast.inventory_tabs.disabled.title").withStyle(ChatFormatting.BOLD), InventoryTabs.TOGGLE_TABS));
+            if (!enabled) Minecraft.getInstance().gui.toastManager().addToast(new ControlHintToast(Component.translatable("toast.inventory_tabs.disabled.title").withStyle(ChatFormatting.BOLD), InventoryTabs.TOGGLE_TABS));
         }
         if (isHidden() || isLocked()) return false;
         if (holdTabCooldown <= 0 && InventoryTabs.NEXT_TAB.matches(new KeyEvent(keyCode, scanCode, 1))) {

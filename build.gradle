@@ -13,7 +13,7 @@ base {
 }
 
 repositories {
-	maven { url "https://repo.sleeping.town/" }
+	maven { url = "https://repo.sleeping.town/" }
 	maven { url = "https://repo.spongepowered.org/repository/maven-public/" }
 }
 
@@ -69,8 +69,8 @@ jar {
 publishing {
 	repositories {
 		maven {
-			name "SleepingTown"
-			url "https://repo-api.sleeping.town/"
+			name = "SleepingTown"
+			url = "https://repo-api.sleeping.town/"
 			credentials(PasswordCredentials)
 		}
 	}

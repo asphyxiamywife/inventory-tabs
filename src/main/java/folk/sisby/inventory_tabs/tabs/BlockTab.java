@@ -90,7 +90,8 @@ public class BlockTab implements Tab {
     }
 
     protected void refreshPreviewAtPos(Level world, BlockPos previewPos) {
-        List<ItemFrame> itemFrames = world.getEntities((Entity) null, new AABB(previewPos.getCenter(), previewPos.getCenter()).inflate(0.6, 0.3, 0.6), e -> e instanceof ItemFrame)
+        Vec3 previewCenter = Vec3.atCenterOf(previewPos);
+        List<ItemFrame> itemFrames = world.getEntities((Entity) null, new AABB(previewCenter, previewCenter).inflate(0.6, 0.3, 0.6), e -> e instanceof ItemFrame)
                 .stream().map(ItemFrame.class::cast).toList();
         if (!itemFrames.isEmpty()) {
             itemStack = itemFrames.get(0).getItem();

@@ -75,7 +75,7 @@ public class ItemTab implements Tab {
         if (player == null) return true;
         if (!player.getInventory().getItem(slot).equals(stack)) return true;
         if (preclusions.values().stream().anyMatch(p -> p.test(stack))) return true;
-        if (Minecraft.getInstance().screen instanceof AbstractContainerScreen<?> hs && hs.getMenu().findSlot(player.getInventory(), slot).isEmpty()) return true;
+        if (Minecraft.getInstance().gui.screen() instanceof AbstractContainerScreen<?> hs && hs.getMenu().findSlot(player.getInventory(), slot).isEmpty()) return true;
         return false;
     }
 

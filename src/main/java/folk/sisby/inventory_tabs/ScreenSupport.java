@@ -1,5 +1,6 @@
 package folk.sisby.inventory_tabs;
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -9,7 +10,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Tuple;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 public class ScreenSupport {
     public static Map<Identifier, Predicate<AbstractContainerScreen<?>>> DENY = new HashMap<>();
     public static Map<Identifier, Predicate<AbstractContainerScreen<?>>> ALLOW = new HashMap<>();
-    public static Map<Identifier, Tuple<Integer, Integer>> SCREEN_BOUND_OFFSETS = new HashMap<>();
+    public static Map<Identifier, Pair<Integer, Integer>> SCREEN_BOUND_OFFSETS = new HashMap<>();
     public static Map<Identifier, Boolean> SCREEN_INVERTS = new HashMap<>();
 
     public static Boolean allowTabs(Identifier type) {
@@ -57,8 +57,8 @@ public class ScreenSupport {
     static {
         DENY.put(InventoryTabs.id("creative_screen"), hs -> hs instanceof CreativeModeInventoryScreen);
         ALLOW.put(InventoryTabs.id("horse_screen"), hs -> hs instanceof HorseInventoryScreen);
-        InventoryTabs.CONFIG.leftBoundOffsetOverride.forEach((screenHandlerId, offset) -> SCREEN_BOUND_OFFSETS.put(screenHandlerId.equals("null") ? null : Identifier.parse(screenHandlerId), new Tuple<>(offset, 0)));
-        InventoryTabs.CONFIG.rightBoundOffsetOverride.forEach((screenHandlerId, offset) -> SCREEN_BOUND_OFFSETS.merge(screenHandlerId.equals("null") ? null : Identifier.parse(screenHandlerId), new Tuple<>(0, offset), (o, n) -> new Tuple<>(o.getA(), n.getB())));
+        InventoryTabs.CONFIG.leftBoundOffsetOverride.forEach((screenHandlerId, offset) -> SCREEN_BOUND_OFFSETS.put(screenHandlerId.equals("null") ? null : Identifier.parse(screenHandlerId), Pair.of(offset, 0)));
+        InventoryTabs.CONFIG.rightBoundOffsetOverride.forEach((screenHandlerId, offset) -> SCREEN_BOUND_OFFSETS.merge(screenHandlerId.equals("null") ? null : Identifier.parse(screenHandlerId), Pair.of(0, offset), (o, n) -> Pair.of(o.getFirst(), n.getSecond())));
         InventoryTabs.CONFIG.invertedTabsOverride.forEach((screenHandlerId, doInvert) -> SCREEN_INVERTS.put(screenHandlerId.equals("null") ? null : Identifier.parse(screenHandlerId), doInvert));
     }
 }
