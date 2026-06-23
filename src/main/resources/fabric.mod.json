@@ -23,7 +23,7 @@
   "depends": {
     "fabricloader": ">=${fl}",
     "fabric-api": ">=${fapi}",
-    "minecraft": ">=${mc}"
+    "minecraft": "~26.3-"
   },
   "entrypoints": {
     "client": [
