@@ -7,6 +7,7 @@ import folk.sisby.inventory_tabs.util.PlayerUtil;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -28,7 +29,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -102,7 +102,7 @@ public class BlockTab implements Tab {
         }
         List<SignBlockEntity> signs = BlockUtil.getAttachedBlocks(world, previewPos, (w, p) -> w.getBlockEntity(p) instanceof SignBlockEntity sbe ? sbe : null);
         if (!signs.isEmpty()) {
-            String name = Arrays.stream(signs.get(0).getFrontText().getMessages(false)).map(Component::getString).filter(s -> !s.isBlank()).collect(Collectors.joining(" "));
+            String name = signs.get(0).getText(SignTextSlot.FRONT).getMessages(false).stream().map(Component::getString).filter(s -> !s.isBlank()).collect(Collectors.joining(" "));
             if (!name.isBlank()) hoverText = Component.literal(name).withStyle(ChatFormatting.ITALIC);
         }
     }

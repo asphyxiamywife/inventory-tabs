@@ -8,7 +8,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,14 +29,14 @@ public class InventoryTabs implements ClientModInitializer {
         ClientTickEvents.END_LEVEL_TICK.register(TabManager::tick);
         NEXT_TAB = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.inventory_tabs.key.next_tab",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_TAB,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_TAB,
                 KeyMapping.Category.INVENTORY
         ));
         TOGGLE_TABS = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.inventory_tabs.key.toggle_tabs",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_LEFT_BRACKET,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_LBRACKET,
                 KeyMapping.Category.INVENTORY
         ));
     }

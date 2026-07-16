@@ -5,9 +5,9 @@ minotaur = "2.+"
 
 kaleidoConfig = "0.3.1+1.3.2"
 
-mc = "26.3-snapshot-3"
+mc = "26.3-snapshot-4"
 fl = "0.19.3"
-fapi = "0.154.3+26.3"
+fapi = "0.155.1+26.3"
 
 [plugins]
 loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }
