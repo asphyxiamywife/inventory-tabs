@@ -77,7 +77,7 @@ public abstract class MixinHandledScreen extends Screen implements InventoryTabs
     }
 
     @Inject(method = "hasClickedOutside", at = @At("RETURN"), cancellable = true)
-    protected void isClickOutsideBounds(double mouseX, double mouseY, int left, int top, CallbackInfoReturnable<Boolean> cir) {
+    protected void isClickOutsideBounds(double mouseX, double mouseY, CallbackInfoReturnable<Boolean> cir) {
         if (inventoryTabs$allowTabs && cir.getReturnValue()) {
             cir.setReturnValue(TabManager.isClickOutsideBounds(mouseX, mouseY));
         }
