@@ -2,7 +2,7 @@ package folk.sisby.inventory_tabs.util;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 
 public class DrawUtil {
     public static void drawCrunched(GuiGraphicsExtractor context, Identifier texture, int x, int y, int width, int height, int regionWidth, int regionHeight, int u, int v, int texWidth, int texHeight) {

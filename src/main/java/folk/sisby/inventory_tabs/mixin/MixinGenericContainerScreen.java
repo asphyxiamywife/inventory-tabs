@@ -4,7 +4,7 @@ import folk.sisby.inventory_tabs.InventoryTabs;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.network.chat.Component;
@@ -39,7 +39,7 @@ public abstract class MixinGenericContainerScreen extends AbstractContainerScree
 	}
 
     @Inject(method = "extractBackground", at = @At("TAIL"))
-    public void containerHeader(GuiGraphicsExtractor drawContext, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    public void containerHeader(GuiGraphicsExtractor drawContext, CallbackInfo ci) {
         drawContext.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_BACKGROUND, (this.width - this.imageWidth) / 2, (this.height - this.imageHeight) / 2, 0, 0, this.imageWidth, 7, 256, 256);
     }
 

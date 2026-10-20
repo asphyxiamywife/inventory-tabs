@@ -44,9 +44,9 @@ public abstract class MixinHandledScreen extends Screen implements InventoryTabs
     }
 
     @Inject(method = "extractRenderState", at = @At("TAIL"))
-    protected void render(GuiGraphicsExtractor drawContext, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    protected void render(GuiGraphicsExtractor drawContext, CallbackInfo ci) {
         if (!inventoryTabs$allowTabs) return;
-        TabManager.render(drawContext, mouseX, mouseY);
+        TabManager.render(drawContext, drawContext.mouseX(), drawContext.mouseY());
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)

@@ -31,9 +31,9 @@ public abstract class MixinRecipeBookScreen {
     }
 
     @Inject(method = "extractRenderState", at = @At("TAIL"))
-    protected void render(GuiGraphicsExtractor drawContext, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    protected void render(GuiGraphicsExtractor drawContext, CallbackInfo ci) {
         if (!inventoryTabs$allowTabs) return;
-        TabManager.render(drawContext, mouseX, mouseY);
+        TabManager.render(drawContext, drawContext.mouseX(), drawContext.mouseY());
     }
 
     // @Inject(method = "isClickOutsideBounds", at = @At("RETURN"), cancellable = true)

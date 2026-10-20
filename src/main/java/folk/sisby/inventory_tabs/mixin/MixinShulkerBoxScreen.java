@@ -3,7 +3,7 @@ package folk.sisby.inventory_tabs.mixin;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.ShulkerBoxScreen;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
@@ -33,7 +33,7 @@ public abstract class MixinShulkerBoxScreen extends AbstractContainerScreen<Ches
     }
 
     @Inject(method = "extractBackground", at = @At("TAIL"))
-    public void containerHeader(GuiGraphicsExtractor drawContext, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    public void containerHeader(GuiGraphicsExtractor drawContext, CallbackInfo ci) {
         drawContext.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_TEXTURE, (this.width - this.imageWidth) / 2, (this.height - this.imageHeight) / 2, 0, 0, this.imageWidth, 7, 256, 256);
     }
 
@@ -53,7 +53,7 @@ public abstract class MixinShulkerBoxScreen extends AbstractContainerScreen<Ches
     }
 
     @Inject(method = "extractBackground", at = @At("TAIL"))
-    public void containerInventory(GuiGraphicsExtractor drawContext, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    public void containerInventory(GuiGraphicsExtractor drawContext, CallbackInfo ci) {
         drawContext.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_TEXTURE, (this.width - this.imageWidth) / 2, (this.height - this.imageHeight) / 2 + 71, 0, 71, this.imageWidth, 96, 256, 256);
     }
 }
