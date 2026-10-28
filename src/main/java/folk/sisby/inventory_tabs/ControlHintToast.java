@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.network.chat.Component;
@@ -42,7 +42,7 @@ public class ControlHintToast implements Toast {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor context, Font textRenderer, long startTime) {
-		context.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, width(), height());
+		context.blitSprite(GuiPipeline.TEXTURED, TEXTURE, 0, 0, width(), height());
 		context.text(textRenderer, title, (width() - titleWidth) / 2, 7, 0xFFFFFF, false);
 		context.text(textRenderer, keyHint, (width() - hintWidth) / 2, 18, 0xFFFFFF, false);
 	}

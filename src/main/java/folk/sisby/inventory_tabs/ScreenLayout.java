@@ -1,8 +1,6 @@
-package folk.sisby.inventory_tabs.duck;
+package folk.sisby.inventory_tabs;
 
 import com.mojang.datafixers.util.Pair;
-import folk.sisby.inventory_tabs.InventoryTabs;
-import folk.sisby.inventory_tabs.ScreenSupport;
 import folk.sisby.inventory_tabs.mixin.HandledScreenAccessor;
 import folk.sisby.inventory_tabs.util.WidgetPosition;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -12,11 +10,10 @@ import net.minecraft.resources.Identifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface InventoryTabsScreen {
-    boolean inventoryTabs$allowTabs();
+public final class ScreenLayout {
+    private ScreenLayout() {}
 
-    default List<WidgetPosition> getTabPositions(int tabWidth) {
-        AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) this;
+    public static List<WidgetPosition> getTabPositions(AbstractContainerScreen<?> screen, int tabWidth) {
         List<WidgetPosition> list = new ArrayList<>();
         Identifier screenHandlerId = BuiltInRegistries.MENU.getKey(ScreenSupport.getScreenHandlerType(screen.getMenu()));
         Pair<Integer, Integer> offsets = ScreenSupport.SCREEN_BOUND_OFFSETS.getOrDefault(screenHandlerId, Pair.of(0, 0));

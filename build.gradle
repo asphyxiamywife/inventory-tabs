@@ -27,6 +27,14 @@ dependencies {
 	implementation libs.fapi
 }
 
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "inventory_tabs_test"
+		enableGameTests = false
+	}
+}
+
 processResources {
 	final Map<String, String> meta = [
 			version       : version,

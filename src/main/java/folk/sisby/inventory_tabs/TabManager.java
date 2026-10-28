@@ -1,7 +1,6 @@
 package folk.sisby.inventory_tabs;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import folk.sisby.inventory_tabs.duck.InventoryTabsScreen;
 import folk.sisby.inventory_tabs.tabs.BlockTab;
 import folk.sisby.inventory_tabs.tabs.EntityTab;
 import folk.sisby.inventory_tabs.tabs.ItemTab;
@@ -20,7 +19,7 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -69,7 +68,7 @@ public class TabManager {
 
     public static void initScreen(Minecraft client, AbstractContainerScreen<?> screen) {
         currentScreen = screen;
-        tabPositions = ((InventoryTabsScreen) currentScreen).getTabPositions(TAB_WIDTH);
+        tabPositions = ScreenLayout.getTabPositions(screen, TAB_WIDTH);
         if (nextTab == null) {
             nextTab = guessOpenedTab(client, screen);
             finishOpeningScreen(screen.getMenu());
@@ -323,7 +322,7 @@ public class TabManager {
         boolean active = left ? currentPage > 0 : currentPage < getMaximumPage();
         int u = BUTTON_WIDTH * (left ? 0 : 1);
         int v = BUTTON_HEIGHT * (active ? hovered ? 2 : 1 : 0);
-        drawContext.blit(RenderPipelines.GUI_TEXTURED, BUTTONS_TEXTURE, rect.getX(), rect.getY(), u, v, rect.getWidth(), rect.getHeight(), 256, 256);
+        drawContext.blit(GuiPipeline.TEXTURED, BUTTONS_TEXTURE, rect.getX(), rect.getY(), u, v, rect.getWidth(), rect.getHeight(), 256, 256);
         if (hovered) drawContext.setTooltipForNextFrame(Minecraft.getInstance().font, Component.literal((currentPage + 1) + "/" + (getMaximumPage() + 1)), (int) mouseX, (int) mouseY);
     }
 

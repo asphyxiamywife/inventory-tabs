@@ -4,7 +4,7 @@ import folk.sisby.inventory_tabs.InventoryTabs;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.network.chat.Component;
@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
@@ -38,43 +37,18 @@ public abstract class MixinGenericContainerScreen extends AbstractContainerScree
 		}
 	}
 
-    @Inject(method = "extractBackground", at = @At("TAIL"))
-    public void containerHeader(GuiGraphicsExtractor drawContext, CallbackInfo ci) {
-        drawContext.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_BACKGROUND, (this.width - this.imageWidth) / 2, (this.height - this.imageHeight) / 2, 0, 0, this.imageWidth, 7, 256, 256);
-    }
-
-    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 0), index = 3)
-    public int containerY(int original) {
-        return original + 7;
-    }
-
-    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 0), index = 5)
-    public float containerV(float original) {
-        if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original + 17;
-        return original + 8;
-    }
-
-    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 0), index = 7)
-    public int containerHeight(int original) {
-        if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original - 17;
-        return original - 8;
-    }
-
-    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 1), index = 3)
-    public int inventoryY(int original) {
-        if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original - 10;
-        return original - 1;
-    }
-
-    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 1), index = 5)
-    public float inventoryV(float original) {
-        if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original + 9;
-        return original;
-    }
-
-    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 1), index = 7)
-    public int inventoryHeight(int original) {
-        if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original - 9;
-        return original;
+    @Inject(method = "extractBackground", at = @At("HEAD"), cancellable = true)
+    private void extractConsistentBackground(GuiGraphicsExtractor graphics, CallbackInfo ci) {
+        super.extractBackground(graphics);
+        int x = (this.width - this.imageWidth) / 2;
+        int y = (this.height - this.imageHeight) / 2;
+        boolean compact = containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers;
+        int trim = compact ? 17 : 8;
+        graphics.blit(GuiPipeline.TEXTURED, CONTAINER_BACKGROUND, x, y, 0, 0, imageWidth, 7, 256, 256);
+        graphics.blit(GuiPipeline.TEXTURED, CONTAINER_BACKGROUND, x, y + 7, 0, trim,
+                imageWidth, containerRows * 18 + 17 - trim, 256, 256);
+        graphics.blit(GuiPipeline.TEXTURED, CONTAINER_BACKGROUND, x, y + containerRows * 18 + (compact ? 7 : 16),
+                0, compact ? 135 : 126, imageWidth, compact ? 87 : 96, 256, 256);
+        ci.cancel();
     }
 }

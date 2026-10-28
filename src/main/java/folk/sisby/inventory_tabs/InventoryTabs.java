@@ -25,6 +25,7 @@ public class InventoryTabs implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        InventoryTabsScreenEvents.register();
         CommonLifecycleEvents.TAGS_LOADED.register((manager, success) -> TabProviders.reload(manager));
         ClientTickEvents.END_LEVEL_TICK.register(TabManager::tick);
         NEXT_TAB = KeyMappingHelper.registerKeyMapping(new KeyMapping(

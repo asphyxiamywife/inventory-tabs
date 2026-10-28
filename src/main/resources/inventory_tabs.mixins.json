@@ -6,11 +6,9 @@
 	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"HandledScreenAccessor",
-		"MixinRecipeBookScreen",
 		"MixinGenericContainerScreen",
 		"MixinGenericContainerScreenHandler",
 		"MixinHandledScreen",
-		"MixinKeyBinding",
 		"MixinMinecraftClient",
 		"MixinMouse",
 		"MixinScreenHandler",
