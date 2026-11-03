@@ -6,6 +6,7 @@ import folk.sisby.inventory_tabs.tabs.BlockTab;
 import folk.sisby.inventory_tabs.tabs.PlayerInventoryTab;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
+import net.minecraft.client.InputType;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -73,9 +74,13 @@ public class ScreenCompatibilityTest implements FabricClientGameTest {
                 world.getServer().runOnServer(server ->
                         world.getConnection().getServerLevel().setBlockAndUpdate(chestPos, Blocks.CHEST.defaultBlockState()));
                 context.waitFor(client -> TabManager.tabs.stream().anyMatch(tab -> tab instanceof BlockTab block && block.pos.equals(chestPos)));
+                context.runOnClient(client -> client.setLastInputType(InputType.MOUSE));
+                context.waitTick();
                 context.getInput().pressKey(InventoryTabs.NEXT_TAB);
                 context.waitForScreen(ContainerScreen.class);
                 context.waitFor(client -> TabManager.nextTab == null && TabManager.currentTab instanceof BlockTab);
+                context.runOnClient(client -> check(client.getLastInputType().isMouse(),
+                        "Switching tabs with the Tab key enabled keyboard navigation"));
                 context.waitFor(client -> TabManager.holdTabCooldown == 0);
                 context.getInput().holdShift();
                 context.getInput().pressKey(InventoryTabs.NEXT_TAB);

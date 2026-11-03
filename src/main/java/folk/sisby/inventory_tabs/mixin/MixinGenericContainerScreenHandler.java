@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 public abstract class MixinGenericContainerScreenHandler {
     @Shadow @Final private int containerRows;
 
-    @ModifyArg(method = "addChestGrid", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/Slot;<init>(Lnet/minecraft/world/Container;III)V", ordinal = 0), index = 3)
+    @ModifyArg(method = "<init>(Lnet/minecraft/world/inventory/MenuType;ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/Container;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/ChestMenu;addChestGrid(Lnet/minecraft/world/Container;II)V", ordinal = 0), index = 2)
     public int raiseContainerSlotY(int original) {
         if (containerRows == 6 && InventoryTabs.CONFIG.compactLargeContainers) return original - 10;
         return original - 1;

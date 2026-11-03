@@ -13,8 +13,10 @@ public final class InventoryTabsScreenEvents {
             if (!(screen instanceof AbstractContainerScreen<?> container) || !ScreenSupport.allowTabs(screen)) return;
 
             TabManager.initScreen(client, container);
-            ScreenEvents.afterExtract(screen).register((s, graphics) ->
-                    TabManager.render(graphics, graphics.mouseX(), graphics.mouseY()));
+            ScreenEvents.afterExtract(screen).register((s, graphics) -> {
+                TabManager.lastFrameInputType = client.getLastInputType();
+                TabManager.render(graphics, graphics.mouseX(), graphics.mouseY());
+            });
             ScreenMouseEvents.allowMouseClick(screen).register((s, click) ->
                     !TabManager.mouseClicked(click.x(), click.y(), click.button()));
             ScreenMouseEvents.allowMouseRelease(screen).register((s, click) ->

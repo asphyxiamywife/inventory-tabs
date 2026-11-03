@@ -36,6 +36,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.InputType;
 import net.minecraft.client.KeyMapping;
 
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ public class TabManager {
     public static final Map<Identifier, BiFunction<AbstractContainerScreen<?>, List<Tab>, Tab>> tabGuessers = new HashMap<>();
 
     public static Tab nextTab;
+    public static InputType lastFrameInputType = InputType.NONE;
     public static AbstractContainerScreen<?> currentScreen;
     public static final List<Tab> tabs = new ArrayList<>();
     public static int currentPage = 0;
@@ -267,6 +269,8 @@ public class TabManager {
         if (isHidden() || isLocked()) return false;
         if (holdTabCooldown <= 0 && InventoryTabs.NEXT_TAB.matches(input)) {
             holdTabCooldown = InventoryTabs.CONFIG.holdTabCooldown;
+            Minecraft client = Minecraft.getInstance();
+            if (client.getLastInputType() != lastFrameInputType) client.setLastInputType(lastFrameInputType);
             if ((input.modifiers() & InputConstants.MOD_SHIFT) != 0) {
                 if (tabs.indexOf(currentTab) == 0) {
                     openTab(tabs.get(tabs.size() - 1));
