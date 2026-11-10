@@ -4,7 +4,7 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.network.chat.Component;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BlockEntity.class)
 public class MixinBlockEntity {
     @Inject(method = "getUpdateTag", at = @At("RETURN"))
-    public void sendCustomNames(HolderLookup.Provider registries, CallbackInfoReturnable<CompoundTag> cir) {
+    public void sendCustomNames(HolderGetter.Provider registries, CallbackInfoReturnable<CompoundTag> cir) {
         if (((BlockEntity) (Object) this) instanceof BaseContainerBlockEntity lcbe) {
             Component name = lcbe.getCustomName();
             if (name != null) {
